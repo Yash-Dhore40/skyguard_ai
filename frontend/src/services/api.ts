@@ -1,7 +1,16 @@
 import type { SensorReading, AnomalyResponse, StationHealth } from '../types';
 
-// In a real application, this would come from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.hostname === '127.0.0.1') {
+    return 'http://127.0.0.1:8000';
+  }
+  return 'http://localhost:8000';
+};
+
+const API_BASE_URL = getBaseUrl();
 
 export const api = {
   detectAnomaly: async (reading: SensorReading): Promise<AnomalyResponse> => {
