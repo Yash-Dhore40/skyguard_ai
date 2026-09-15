@@ -7,6 +7,8 @@ import pandas as pd
 from datetime import datetime, timedelta
 import joblib
 import os
+import asyncio
+import urllib.request
 from typing import List, Optional
 
 app = FastAPI(title="SkyGuard AI - Anomaly Detection for AWS", version="1.0.0")
@@ -72,6 +74,40 @@ async def startup_event():
         normal_data = generate_synthetic_normal_data(1000)
         scaled_data = scaler.fit_transform(normal_data)
         isolation_forest.fit(scaled_data)
+
+    # Start self-ping task every 14 minutes to keep server awake on platforms like Render
+    asyncio.create_task(keep_alive_task())
+
+async def keep_alive_task():
+    """Periodically send a request every 14 minutes to prevent Render free instance from sleeping."""
+    # Render automatically provides RENDER_EXTERNAL_URL (e.g. https://skyguard-ai-backend.onrender.com)
+    external_url = os.getenv("RENDER_EXTERNAL_URL") or os.getenv("SELF_PING_URL")
+    if not external_url:
+        print("[Keep-Alive] No RENDER_EXTERNAL_URL or SELF_PING_URL found. Keep-alive self-ping disabled (local mode).")
+        return
+
+    health_url = f"{external_url.rstrip('/')}/health"
+    print(f"[Keep-Alive] Keep-alive task started: pinging {health_url} every 14 minutes.")
+
+    while True:
+        try:
+            # Sleep for 14 minutes (840 seconds)
+            await asyncio.sleep(14 * 60)
+
+            def ping():
+                req = urllib.request.Request(
+                    health_url,
+                    headers={"User-Agent": "SkyGuard-KeepAlive/1.0"}
+                )
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    return resp.getcode()
+
+            status = await asyncio.to_thread(ping)
+            print(f"[Keep-Alive] Ping sent to {health_url} - Status {status}")
+        except asyncio.CancelledError:
+            break
+        except Exception as err:
+            print(f"[Keep-Alive] Self-ping failed: {err}")
 
 def generate_synthetic_normal_data(n_samples=1000):
     """Generate synthetic normal weather data for initial training"""
