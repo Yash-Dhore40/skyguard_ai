@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { LucideIcon, Thermometer, Droplets, Wind, Zap, Activity } from 'lucide-react';
+import { Thermometer, Droplets, Wind, Zap, Activity } from 'lucide-react';
 
 interface FaultLabProps {}
 

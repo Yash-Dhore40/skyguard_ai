@@ -47,8 +47,8 @@ const SensorCharts: React.FC<SensorChartsProps> = ({ data, isDetecting }) => {
             <XAxis dataKey="time" tick={{ fontSize: 12 }} />
             <YAxis tick={{ fontSize: 12 }} />
             <Tooltip 
-              formatter={(value) => `${value}°C`} 
-              labelFormatter={(value) => `Temperature: ${value}°C`} 
+              formatter={(value: any) => `${value}`} 
+              labelFormatter={(value: any) => `${value}`} 
             />
             <Legend verticalAlign="top" height={36} />
             <Line type="monotone" dataKey="temperature" stroke="#ef4444" name="Temperature (°C)" />

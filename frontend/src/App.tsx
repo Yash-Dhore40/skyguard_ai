@@ -1,11 +1,10 @@
-import React from 'react';
 import './App.css';
 import StationHealth from './components/StationHealth';
 import SensorCharts from './components/SensorCharts';
 import FaultLab from './components/FaultLab';
 import AnomalyAlerts from './components/AnomalyAlerts';
 import { useState, useEffect } from 'react';
-import { SensorReading, AnomalyResponse } from './types';
+import type { SensorReading, AnomalyResponse } from './types';
 import { api } from './services/api';
 
 function App() {

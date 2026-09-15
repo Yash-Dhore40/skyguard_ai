@@ -1,4 +1,4 @@
-import { SensorReading, AnomalyResponse, StationHealth } from '../types';
+import type { SensorReading, AnomalyResponse, StationHealth } from '../types';
 
 // In a real application, this would come from environment variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
