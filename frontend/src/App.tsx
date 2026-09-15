@@ -269,6 +269,11 @@ function App() {
               <span className="text-slate-300">
                 Backend: <strong className={isBackendOnline ? 'text-emerald-400' : 'text-rose-400'}>{isBackendOnline ? 'Online' : 'Unreachable'}</strong>
               </span>
+              {isBackendOnline && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 hidden lg:inline" title={api.getActiveUrl()}>
+                  {api.getActiveUrl().includes('onrender') ? 'Render Cloud' : 'Local Edge'}
+                </span>
+              )}
             </div>
 
             <div className="hidden sm:block h-3 w-px bg-slate-700" />
