@@ -1,13 +1,13 @@
 import type { SensorReading, AnomalyResponse, StationHealth } from '../types';
 
+const LIVE_RENDER_URL = 'https://skyguard-ai-backend-vh2h.onrender.com';
+
 const getBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '');
   }
-  if (typeof window !== 'undefined' && window.location.hostname === '127.0.0.1') {
-    return 'http://127.0.0.1:8000';
-  }
-  return 'http://localhost:8000';
+  // Default to the live Render cloud deployment
+  return LIVE_RENDER_URL;
 };
 
 const API_BASE_URL = getBaseUrl();
