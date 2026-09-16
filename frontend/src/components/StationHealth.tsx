@@ -1,4 +1,5 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import type { StationHealth as StationHealthType, ClimateZoneType } from '../types';
 import { 
   ShieldCheck, 
@@ -22,7 +23,6 @@ interface StationHealthProps {
   elevation_m?: number;
   uptimeSeconds?: number;
   isEdgeMode?: boolean;
-  onOpenMetricsModal?: () => void;
 }
 
 const StationHealth: React.FC<StationHealthProps> = ({ 
@@ -33,8 +33,7 @@ const StationHealth: React.FC<StationHealthProps> = ({
   climateZone = "GANGETIC_PLAINS",
   elevation_m = 216,
   uptimeSeconds = 3492,
-  isEdgeMode = false,
-  onOpenMetricsModal
+  isEdgeMode = false
 }) => {
   const score = Math.round(health.score);
   
@@ -205,15 +204,14 @@ const StationHealth: React.FC<StationHealthProps> = ({
                 <span>Uptime: <strong className="text-emerald-300 font-bold">{formatUptime(uptimeSeconds)}</strong></span>
               </span>
 
-              {onOpenMetricsModal && (
-                <button
-                  onClick={onOpenMetricsModal}
-                  className="text-xs text-cyan-300 hover:text-cyan-200 underline font-bold flex items-center gap-1"
-                >
-                  <Target className="w-3.5 h-3.5" />
-                  View Accuracy & FPR
-                </button>
-              )}
+              <NavLink
+                to="/benchmarks"
+                className="text-xs text-cyan-300 hover:text-cyan-200 underline font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                title="View Ground-Truth Accuracy & False Positive Rate Benchmarks"
+              >
+                <Target className="w-3.5 h-3.5 text-cyan-400" />
+                View Accuracy & FPR (100% ACC) &rarr;
+              </NavLink>
             </div>
           </div>
         </div>

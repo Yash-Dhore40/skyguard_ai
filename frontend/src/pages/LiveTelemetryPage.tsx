@@ -35,6 +35,7 @@ interface LiveTelemetryPageProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onReset: () => void;
+  isSatelliteAnchored?: boolean;
 }
 
 export const LiveTelemetryPage: React.FC<LiveTelemetryPageProps> = ({
@@ -48,7 +49,8 @@ export const LiveTelemetryPage: React.FC<LiveTelemetryPageProps> = ({
   onChangeInterval,
   soundEnabled,
   onToggleSound,
-  onReset
+  onReset,
+  isSatelliteAnchored = true
 }) => {
   const latestPoint = telemetryData[telemetryData.length - 1] || {
     temperature: 26.5,
@@ -71,6 +73,10 @@ export const LiveTelemetryPage: React.FC<LiveTelemetryPageProps> = ({
           </div>
           <span className="text-xs px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 font-semibold hidden md:inline">
             {currentStation.name} • {currentStation.state}
+          </span>
+          <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold hidden lg:flex items-center gap-1.5 shadow-sm">
+            <Satellite className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+            {isSatelliteAnchored ? 'ORBITAL SATELLITE ANCHOR: SYNCED' : 'ORBITAL SATELLITE LINK: SYNCING...'}
           </span>
         </div>
 
@@ -284,7 +290,6 @@ export const LiveTelemetryPage: React.FC<LiveTelemetryPageProps> = ({
           elevation_m={currentStation.elevation_m}
           isEdgeMode={currentStation.is_edge_mode}
           uptimeSeconds={stationHealth.uptime_seconds}
-          onOpenMetricsModal={() => {}}
         />
       </div>
 

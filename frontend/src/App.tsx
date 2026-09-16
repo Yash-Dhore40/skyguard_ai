@@ -85,20 +85,75 @@ function App() {
     }
   }, [soundEnabled]);
 
-  // Base climate generator
-  const lastBaseRef = useRef<{ temp: number; press: number; hum: number }>({
+  // Live Real-World Satellite Weather Anchor
+  const [satelliteAnchorActive, setSatelliteAnchorActive] = useState<boolean>(false);
+  const lastBaseRef = useRef<{ temp: number; press: number; hum: number; isReal: boolean }>({
     temp: 28.0,
     press: 1008.0,
-    hum: 65.0
+    hum: 65.0,
+    isReal: false
   });
 
-  // Calculate baseline pressure from ISA barometric equation
+  // Calculate baseline pressure from standard ISA barometric equation if satellite is connecting
   const getExpectedPressure = (elevation_m: number): number => {
     return +(1013.25 * Math.pow(1 - (0.0065 * elevation_m) / 288.15, 5.25588)).toFixed(1);
   };
 
-  // Generate realistic weather reading for active climate zone
+  // Synchronize real-world satellite atmospheric observations for currentStation
+  useEffect(() => {
+    let isMounted = true;
+    const syncRealSatelliteBaseline = async () => {
+      try {
+        const liveReport = await api.getLiveWeather(currentStation.id);
+        if (isMounted && liveReport?.observation) {
+          const obs = liveReport.observation;
+          if (typeof obs.temperature === 'number' && typeof obs.surface_pressure === 'number') {
+            lastBaseRef.current = {
+              temp: obs.temperature,
+              press: obs.surface_pressure,
+              hum: obs.relative_humidity,
+              isReal: true
+            };
+            setSatelliteAnchorActive(true);
+          }
+        }
+      } catch (err) {
+        console.warn("[SkyGuard] Satellite anchor sync fallback:", err);
+      }
+    };
+
+    syncRealSatelliteBaseline();
+    // Re-sync with real satellite constellation every 60 seconds
+    const syncInterval = setInterval(syncRealSatelliteBaseline, 60000);
+    return () => {
+      isMounted = false;
+      clearInterval(syncInterval);
+    };
+  }, [currentStation.id]);
+
+  // Generate live high-frequency AWS telemetry ticks anchored around REAL satellite observations
   const generateNormalReading = useCallback((): SensorReading => {
+    const base = lastBaseRef.current;
+
+    // When real satellite observations are active, generate natural high-frequency micro-sensor variations
+    // (+/-0.15°C, +/-0.15 hPa, +/-0.4% RH) around the actual physical satellite observations
+    if (base.isReal) {
+      const t = +(base.temp + (Math.random() * 0.3 - 0.15)).toFixed(1);
+      const p = +(base.press + (Math.random() * 0.3 - 0.15)).toFixed(1);
+      const h = Math.min(100.0, Math.max(5.0, +(base.hum + (Math.random() * 0.8 - 0.4)).toFixed(1)));
+
+      return {
+        station_id: currentStation.id,
+        climate_zone: currentStation.climate_zone,
+        elevation_m: currentStation.elevation_m,
+        temperature: t,
+        pressure: p,
+        humidity: h,
+        timestamp: new Date().toISOString()
+      };
+    }
+
+    // Baseline fallback if initial satellite query is pending
     const zone = currentStation.climate_zone;
     const basePress = getExpectedPressure(currentStation.elevation_m);
 
@@ -122,9 +177,9 @@ function App() {
       baseHum = 55.0 + Math.random() * 20.0;
     }
 
-    const t = +(baseTemp + (Math.random() * 1.6 - 0.8)).toFixed(1);
-    const p = +(basePress + (Math.random() * 1.2 - 0.6)).toFixed(1);
-    const h = Math.min(100.0, Math.max(5.0, +(baseHum + (Math.random() * 3.0 - 1.5)).toFixed(1)));
+    const t = +(baseTemp + (Math.random() * 0.3 - 0.15)).toFixed(1);
+    const p = +(basePress + (Math.random() * 0.3 - 0.15)).toFixed(1);
+    const h = Math.min(100.0, Math.max(5.0, +(baseHum + (Math.random() * 0.8 - 0.4)).toFixed(1)));
 
     return {
       station_id: currentStation.id,
@@ -218,7 +273,8 @@ function App() {
     lastBaseRef.current = {
       temp: station.climate_zone === 'WESTERN_HIMALAYAS' ? -2.0 : station.climate_zone === 'THAR_DESERT' ? 42.0 : 26.0,
       press: station.elevation_m > 1000 ? 750.0 : 1008.0,
-      hum: station.climate_zone === 'TROPICAL_COASTAL' ? 88.0 : 55.0
+      hum: station.climate_zone === 'TROPICAL_COASTAL' ? 88.0 : 55.0,
+      isReal: false
     };
     handleReset();
   };
@@ -259,6 +315,7 @@ function App() {
                 soundEnabled={soundEnabled}
                 onToggleSound={() => setSoundEnabled(!soundEnabled)}
                 onReset={handleReset}
+                isSatelliteAnchored={satelliteAnchorActive}
               />
             } 
           />
