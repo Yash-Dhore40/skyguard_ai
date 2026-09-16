@@ -9,27 +9,74 @@
   --color-obsidian-800: #0f172a;
   --color-obsidian-700: #1e293b;
   --color-obsidian-600: #334155;
+  --color-slate-400: #cbd5e1; /* Boosted from #94a3b8 to crisp silver #cbd5e1 for high contrast readability */
+  --color-slate-500: #94a3b8; /* Boosted from dark #64748b to #94a3b8 so secondary text is never muddy */
 }
 
 /* Base resets & styling */
 * {
-  border-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 body {
-  background-color: #070b14;
-  color: #e2e8f0;
+  background-color: #040711;
+  color: #f8fafc;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism & Cyber HUD Styles */
+/* Universal High-Contrast Legibility Overrides */
+.text-slate-400 {
+  color: #cbd5e1 !important; /* Bright readable silver (slate-300 equivalent) */
+}
+
+.text-slate-500 {
+  color: #94a3b8 !important; /* Clean readable muted slate (never muddy) */
+}
+
+.text-slate-300 {
+  color: #e2e8f0 !important; /* Near white for subheadings */
+}
+
+/* Font size protection: Ensure tiny text is sharp and legible */
+.text-\[10px\] {
+  font-size: 11px !important;
+  line-height: 15px !important;
+  font-weight: 500;
+}
+
+/* High-contrast headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff !important;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+}
+
+/* Glassmorphism & Cyber HUD Styles with High Contrast & Deep Dark Opacity */
 .glass-panel {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(7, 11, 20, 0.9) 100%);
+  background: linear-gradient(135deg, rgba(11, 17, 34, 0.96) 0%, rgba(5, 8, 18, 0.98) 100%);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 14px 40px -8px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+}
+
+.glass-card {
+  background: rgba(11, 17, 34, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.10);
   backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .glass-card-hover {
@@ -42,40 +89,63 @@ body {
   transform: translateY(-2px);
 }
 
+/* Glow effects */
+.shadow-glow-cyan {
+  box-shadow: 0 0 25px -4px rgba(6, 182, 212, 0.45);
+}
+
+.shadow-glow-emerald {
+  box-shadow: 0 0 25px -4px rgba(16, 185, 129, 0.45);
+}
+
+.shadow-glow-purple {
+  box-shadow: 0 0 25px -4px rgba(168, 85, 247, 0.45);
+}
+
 /* Cybernetic Grid Background */
 .bg-grid-cyber {
-  background-size: 32px 32px;
+  background-size: 36px 36px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
 }
 
 /* Glowing Radial Orbs */
 .orb-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(100px);
   pointer-events: none;
-  opacity: 0.15;
+  opacity: 0.12;
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(11, 17, 32, 0.5);
+  background: rgba(11, 17, 32, 0.4);
 }
 
 ::-webkit-scrollbar-thumb {
   background: rgba(56, 189, 248, 0.25);
-  border-radius: 4px;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(56, 189, 248, 0.5);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom Range Input (Slider) */
@@ -90,8 +160,8 @@ input[type="range"] {
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #38bdf8;
   cursor: pointer;
@@ -100,5 +170,5 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 input[type="range"]::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.25);
 }

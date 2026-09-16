@@ -93,9 +93,16 @@ const SensorCharts: React.FC<SensorChartsProps> = ({ data, isDetecting, anomalyC
   });
 
   return (
-    <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+    <div className="glass-panel rounded-2xl p-6 relative overflow-hidden group">
+      {/* Subtle Atmospheric Thermal Radar Image Backdrop */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-[0.06] group-hover:opacity-[0.10] transition-opacity duration-700 pointer-events-none scale-105"
+        style={{ backgroundImage: `url('/assets/bg_thermal_radar.jpg')` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/60 via-slate-950/80 to-slate-950/95 pointer-events-none" />
+
       {/* Header with Title and Interactive Chart Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-cyan-400" />
@@ -119,100 +126,100 @@ const SensorCharts: React.FC<SensorChartsProps> = ({ data, isDetecting, anomalyC
           {/* Temperature Toggle */}
           <button
             onClick={() => setShowTemp(!showTemp)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium flex items-center gap-1.5 border transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 border transition-all ${
               showTemp 
-                ? 'bg-rose-500/20 border-rose-500/40 text-rose-300 shadow-sm' 
-                : 'bg-slate-900/40 border-slate-800 text-slate-500'
+                ? 'bg-rose-500/25 border-rose-500/50 text-rose-200 shadow-sm' 
+                : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
             }`}
           >
-            <Thermometer className="w-3 h-3" />
+            <Thermometer className="w-3.5 h-3.5" />
             Temp
-            {showTemp ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+            {showTemp ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           </button>
 
           {/* Pressure Toggle */}
           <button
             onClick={() => setShowPressure(!showPressure)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium flex items-center gap-1.5 border transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 border transition-all ${
               showPressure 
-                ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 shadow-sm' 
-                : 'bg-slate-900/40 border-slate-800 text-slate-500'
+                ? 'bg-emerald-500/25 border-emerald-500/50 text-emerald-200 shadow-sm' 
+                : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
             }`}
           >
-            <Gauge className="w-3 h-3" />
+            <Gauge className="w-3.5 h-3.5" />
             Pressure
-            {showPressure ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+            {showPressure ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           </button>
 
           {/* Humidity Toggle */}
           <button
             onClick={() => setShowHumidity(!showHumidity)}
-            className={`px-2.5 py-1 rounded-lg text-xs font-mono font-medium flex items-center gap-1.5 border transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold flex items-center gap-1.5 border transition-all ${
               showHumidity 
-                ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-300 shadow-sm' 
-                : 'bg-slate-900/40 border-slate-800 text-slate-500'
+                ? 'bg-cyan-500/25 border-cyan-500/50 text-cyan-200 shadow-sm' 
+                : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
             }`}
           >
-            <Droplets className="w-3 h-3" />
+            <Droplets className="w-3.5 h-3.5" />
             Humidity
-            {showHumidity ? <Eye className="w-2.5 h-2.5" /> : <EyeOff className="w-2.5 h-2.5" />}
+            {showHumidity ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
           </button>
 
-          {/* Window size buttons */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-lg p-0.5 flex items-center text-xs font-mono">
-            {[20, 30, 50].map((count) => (
+          {/* Window size controls */}
+          <div className="flex items-center bg-slate-900 border border-slate-700 rounded-lg p-0.5 ml-auto text-xs font-mono font-bold">
+            {[15, 30, 60].map((pts) => (
               <button
-                key={count}
-                onClick={() => setPointsWindow(count)}
-                className={`px-2 py-0.5 rounded text-[11px] transition-all ${
-                  pointsWindow === count 
+                key={pts}
+                onClick={() => setPointsWindow(pts)}
+                className={`px-2.5 py-1 rounded transition-colors ${
+                  pointsWindow === pts 
                     ? 'bg-cyan-500 text-slate-950 font-bold' 
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-slate-200 hover:text-white'
                 }`}
               >
-                {count}p
+                {pts}pts
               </button>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Chart Canvas */}
-      <div className="w-full h-80 relative">
+      {/* Main Multi-Metric Chart Canvas */}
+      <div className="h-[340px] w-full mt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <AreaChart data={formattedData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
             <defs>
               {/* Temperature Gradient */}
               <linearGradient id="tempGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.35} />
+                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
               </linearGradient>
 
               {/* Pressure Gradient */}
               <linearGradient id="pressureGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.35} />
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
               </linearGradient>
 
               {/* Humidity Gradient */}
               <linearGradient id="humidityGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.35} />
+                <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.4} />
                 <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.0} />
               </linearGradient>
             </defs>
 
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.08)" vertical={false} />
             
             <XAxis 
               dataKey="time" 
-              tick={{ fontSize: 10, fill: '#64748b', fontFamily: 'JetBrains Mono' }} 
-              axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+              tick={{ fontSize: 11, fill: '#cbd5e1', fontFamily: 'JetBrains Mono', fontWeight: 600 }} 
+              axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
               tickLine={false}
             />
             
             <YAxis 
-              tick={{ fontSize: 10, fill: '#64748b', fontFamily: 'JetBrains Mono' }} 
-              axisLine={{ stroke: 'rgba(255, 255, 255, 0.1)' }}
+              tick={{ fontSize: 11, fill: '#cbd5e1', fontFamily: 'JetBrains Mono', fontWeight: 600 }} 
+              axisLine={{ stroke: 'rgba(255, 255, 255, 0.2)' }}
               tickLine={false}
             />
 

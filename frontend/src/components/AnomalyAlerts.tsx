@@ -23,6 +23,12 @@ const AnomalyAlerts: React.FC<AnomalyAlertsProps> = ({ anomalies, onClear }) => 
   const getFaultMeta = (type: string | null) => {
     if (!type) return { icon: HelpCircle, color: 'text-slate-400', border: 'border-slate-700', bg: 'bg-slate-800/40' };
     const t = type.toUpperCase();
+    if (t.includes('GENUINE') || t.includes('MONSOON') || t.includes('HEATWAVE')) {
+      return { icon: CheckCircle, color: 'text-emerald-400', border: 'border-emerald-500/40', bg: 'bg-emerald-500/10' };
+    }
+    if (t.includes('DRIFT')) {
+      return { icon: Zap, color: 'text-purple-400', border: 'border-purple-500/40', bg: 'bg-purple-500/10' };
+    }
     if (t.includes('TEMP')) {
       return { icon: Flame, color: 'text-rose-400', border: 'border-rose-500/40', bg: 'bg-rose-500/10' };
     }
@@ -52,8 +58,15 @@ const AnomalyAlerts: React.FC<AnomalyAlertsProps> = ({ anomalies, onClear }) => 
   };
 
   return (
-    <div className="glass-panel rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between">
-      <div>
+    <div className="glass-panel rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between group">
+      {/* Background Doppler Dome Backdrop */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-[0.07] group-hover:opacity-[0.12] transition-opacity duration-700 pointer-events-none scale-105"
+        style={{ backgroundImage: `url('/assets/bg_radar_dome.jpg')` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-slate-950/70 via-slate-950/85 to-slate-950/95 pointer-events-none" />
+
+      <div className="relative z-10">
         {/* Header & Actions */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
@@ -159,49 +172,49 @@ const AnomalyAlerts: React.FC<AnomalyAlertsProps> = ({ anomalies, onClear }) => 
 
                   {/* Side-by-side Telemetry: Raw vs Corrected */}
                   {item.corrected_values && (
-                    <div className="bg-slate-950/70 border border-slate-800/80 rounded-lg p-2.5 font-mono text-[11px] space-y-1">
-                      <div className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mb-1 flex items-center gap-1">
+                    <div className="bg-slate-950/95 border border-slate-700/70 rounded-xl p-3 font-mono text-xs space-y-2 shadow-inner">
+                      <div className="text-xs text-cyan-300 font-bold uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                         <span>Autonomous Self-Healing Vector</span>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-3">
                         {/* Temperature */}
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-slate-400">Temp</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-rose-400 line-through">
+                        <div className="flex flex-col bg-slate-900/80 p-2 rounded-lg border border-white/5">
+                          <span className="text-xs text-slate-300 font-semibold mb-0.5">Temp</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-rose-300 line-through font-bold">
                               {item.reading.temperature.toFixed(1)}°
                             </span>
-                            <ArrowRight className="w-2.5 h-2.5 text-slate-500" />
-                            <span className="text-emerald-400 font-bold">
+                            <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="text-emerald-300 font-black">
                               {item.corrected_values.temperature.toFixed(1)}°C
                             </span>
                           </div>
                         </div>
 
                         {/* Pressure */}
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-slate-400">Pressure</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-slate-300">
+                        <div className="flex flex-col bg-slate-900/80 p-2 rounded-lg border border-white/5">
+                          <span className="text-xs text-slate-300 font-semibold mb-0.5">Pressure</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-300 font-bold">
                               {item.reading.pressure.toFixed(1)}
                             </span>
-                            <ArrowRight className="w-2.5 h-2.5 text-slate-500" />
-                            <span className="text-emerald-400 font-bold">
+                            <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="text-emerald-300 font-black">
                               {item.corrected_values.pressure.toFixed(1)} hPa
                             </span>
                           </div>
                         </div>
 
                         {/* Humidity */}
-                        <div className="flex flex-col">
-                          <span className="text-[10px] text-slate-400">Humidity</span>
-                          <div className="flex items-center gap-1">
-                            <span className="text-blue-400">
+                        <div className="flex flex-col bg-slate-900/80 p-2 rounded-lg border border-white/5">
+                          <span className="text-xs text-slate-300 font-semibold mb-0.5">Humidity</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-blue-300 font-bold">
                               {item.reading.humidity.toFixed(1)}%
                             </span>
-                            <ArrowRight className="w-2.5 h-2.5 text-slate-500" />
-                            <span className="text-emerald-400 font-bold">
+                            <ArrowRight className="w-3.5 h-3.5 text-cyan-400" />
+                            <span className="text-emerald-300 font-black">
                               {item.corrected_values.humidity.toFixed(1)}%
                             </span>
                           </div>

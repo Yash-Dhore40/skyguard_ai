@@ -1,27 +1,40 @@
 import React from 'react';
-import type { StationHealth as StationHealthType } from '../types';
+import type { StationHealth as StationHealthType, ClimateZoneType } from '../types';
 import { 
   ShieldCheck, 
   AlertTriangle, 
   AlertOctagon, 
-  Cpu, 
   Radio, 
   Thermometer, 
   Gauge, 
   Droplets,
-  Activity
+  Activity,
+  TrendingUp,
+  Target
 } from 'lucide-react';
 
 interface StationHealthProps {
   health: StationHealthType;
   stationId?: string;
+  stationName?: string;
+  stationState?: string;
+  climateZone?: ClimateZoneType;
+  elevation_m?: number;
   uptimeSeconds?: number;
+  isEdgeMode?: boolean;
+  onOpenMetricsModal?: () => void;
 }
 
 const StationHealth: React.FC<StationHealthProps> = ({ 
   health, 
-  stationId = "AWS-ALPHA-01",
-  uptimeSeconds = 3492
+  stationId = "AWS-IND-001",
+  stationName = "Safdarjung Observatory",
+  stationState = "Delhi",
+  climateZone = "GANGETIC_PLAINS",
+  elevation_m = 216,
+  uptimeSeconds = 3492,
+  isEdgeMode = false,
+  onOpenMetricsModal
 }) => {
   const score = Math.round(health.score);
   
@@ -78,25 +91,41 @@ const StationHealth: React.FC<StationHealthProps> = ({
   const subsystems = [
     { name: 'Thermal Array', icon: Thermometer, status: score > 50 ? 'Nominal' : 'Warning', ok: score > 50 },
     { name: 'Barometric Cell', icon: Gauge, status: score > 40 ? 'Nominal' : 'Drift Alert', ok: score > 40 },
-    { name: 'Hygrometer', icon: Droplets, status: score > 60 ? 'Nominal' : 'Out of Bounds', ok: score > 60 },
-    { name: 'Isolation Forest ML', icon: Cpu, status: 'Active (v1.0.0)', ok: true },
-    { name: 'Edge Uplink', icon: Radio, status: 'Connected (WebSocket)', ok: true },
+    { name: 'Polymer Hygrometer', icon: Droplets, status: score > 60 ? 'Nominal' : 'Compensated', ok: score > 60 },
+    { name: 'CUSUM Drift Filter', icon: TrendingUp, status: 'Active (h=4.5σ)', ok: true },
+    { name: isEdgeMode ? 'Edge Gateway' : 'Cloud Uplink', icon: Radio, status: isEdgeMode ? 'Edge Buffer On' : 'Uplink Synced', ok: true },
   ];
 
+  const getZoneImage = (zone?: string) => {
+    if (zone === 'WESTERN_HIMALAYAS') return '/assets/zone_himalayas.jpg';
+    if (zone === 'THAR_DESERT') return '/assets/zone_thar.jpg';
+    if (zone === 'TROPICAL_COASTAL') return '/assets/zone_coastal.jpg';
+    if (zone === 'GANGETIC_PLAINS') return '/assets/zone_gangetic.jpg';
+    if (zone === 'DECCAN_PLATEAU') return '/assets/zone_deccan.jpg';
+    return '/assets/bg_satellite_globe.jpg';
+  };
+
   return (
-    <div className="glass-panel rounded-2xl p-5 relative overflow-hidden">
+    <div className="glass-panel rounded-2xl p-5 relative overflow-hidden group">
+      {/* Contextual Climate Zone Photo Backdrop */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center opacity-15 group-hover:opacity-20 transition-opacity duration-700 pointer-events-none scale-105"
+        style={{ backgroundImage: `url(${getZoneImage(climateZone)})` }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/75 to-slate-950/90 pointer-events-none" />
+
       {/* Background ambient glow */}
       <div 
         className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
         style={{ backgroundColor: currentTheme.stroke }}
       />
 
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div className="relative z-10 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
         
-        {/* Left: Station Identity & Primary Gauge */}
+        {/* Left: Station Identity & Primary Gauge & Zone Preview */}
         <div className="flex items-center gap-5">
           {/* Radial Circular SVG Gauge */}
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center shrink-0">
             <svg className="w-28 h-28 transform -rotate-90" viewBox="0 0 120 120">
               <circle
                 cx="60"
@@ -129,9 +158,22 @@ const StationHealth: React.FC<StationHealthProps> = ({
             </div>
           </div>
 
+          {/* Regional Climate Zone Photographic Badge */}
+          <div className="relative w-24 h-20 rounded-xl overflow-hidden border border-white/10 shrink-0 hidden sm:block shadow-lg group">
+            <img 
+              src={getZoneImage(climateZone)} 
+              alt={climateZone} 
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+            <span className="absolute bottom-1 left-1.5 text-[9px] font-mono text-cyan-300 font-bold uppercase tracking-wider">
+              {climateZone ? climateZone.replace('_', ' ') : 'AWS SITE'}
+            </span>
+          </div>
+
           {/* Station Metadata */}
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-ping"></span>
               <h2 className="text-lg font-bold text-white tracking-wide font-mono">
                 {stationId}
@@ -140,16 +182,39 @@ const StationHealth: React.FC<StationHealthProps> = ({
                 <StatusIcon className="w-3 h-3" />
                 {currentTheme.label}
               </span>
+              {isEdgeMode && (
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30 flex items-center gap-1">
+                  <Radio className="w-3 h-3" /> Edge Mode
+                </span>
+              )}
             </div>
-            <p className="text-xs text-slate-400 flex items-center gap-2 font-mono">
-              <span>Geo: 18.5204° N, 73.8567° E</span>
-              <span>•</span>
-              <span>Elev: 560m</span>
+            
+            <h3 className="text-sm font-bold text-white line-clamp-1">
+              {stationName} ({stationState})
+            </h3>
+
+            <p className="text-xs text-slate-200 flex items-center gap-2 font-mono mt-1">
+              <span>Zone: <strong className="text-cyan-300 font-bold">{climateZone}</strong></span>
+              <span className="text-cyan-400 font-bold">•</span>
+              <span>Elev: <strong className="text-white font-bold">{elevation_m}m</strong></span>
             </p>
-            <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5 font-mono">
-              <Activity className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Telemetry Uptime: <strong className="text-slate-200">{formatUptime(uptimeSeconds)}</strong></span>
-            </p>
+
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <span className="text-xs text-slate-200 flex items-center gap-1.5 font-mono">
+                <Activity className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Uptime: <strong className="text-emerald-300 font-bold">{formatUptime(uptimeSeconds)}</strong></span>
+              </span>
+
+              {onOpenMetricsModal && (
+                <button
+                  onClick={onOpenMetricsModal}
+                  className="text-xs text-cyan-300 hover:text-cyan-200 underline font-bold flex items-center gap-1"
+                >
+                  <Target className="w-3.5 h-3.5" />
+                  View Accuracy & FPR
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -160,15 +225,15 @@ const StationHealth: React.FC<StationHealthProps> = ({
             return (
               <div 
                 key={idx}
-                className="bg-slate-900/60 border border-slate-800/80 rounded-xl p-2.5 flex flex-col justify-between hover:border-cyan-500/30 transition-all"
+                className="bg-slate-900/90 border border-slate-700/70 rounded-xl p-2.5 flex flex-col justify-between hover:border-cyan-500/50 transition-all shadow-sm"
               >
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[11px] font-medium text-slate-400 truncate">{sub.name}</span>
+                  <span className="text-xs font-bold text-slate-200 truncate">{sub.name}</span>
                   <SubIcon className={`w-3.5 h-3.5 ${sub.ok ? 'text-cyan-400' : 'text-amber-400'}`} />
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-1.5 h-1.5 rounded-full ${sub.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
-                  <span className={`text-[10px] font-mono font-semibold ${sub.ok ? 'text-slate-300' : 'text-amber-300'} truncate`}>
+                  <span className={`w-2 h-2 rounded-full ${sub.ok ? 'bg-emerald-400' : 'bg-amber-400 animate-pulse'}`} />
+                  <span className={`text-[11px] font-mono font-bold ${sub.ok ? 'text-slate-200' : 'text-amber-300'} truncate`}>
                     {sub.status}
                   </span>
                 </div>
