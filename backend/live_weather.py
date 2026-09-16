@@ -3,9 +3,19 @@ SkyGuard AI — Free Real-World Live Satellite Weather Service
 Queries Open-Meteo API (100% Free, No API key needed) for any Indian coordinate.
 """
 
-import httpx
 import time
+import json
+import urllib.request
+import urllib.parse
+import asyncio
 from typing import Dict, Any, Optional
+
+try:
+    import httpx
+    HAS_HTTPX = True
+except ImportError:
+    httpx = None
+    HAS_HTTPX = False
 
 # In-memory cache to avoid repeated network calls: {station_id: (timestamp, data)}
 _CACHE: Dict[str, tuple[float, Dict[str, Any]]] = {}
@@ -51,10 +61,21 @@ async def fetch_real_world_weather(
     }
 
     try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            resp = await client.get(url, params=params)
-            resp.raise_for_status()
-            data = resp.json()
+        if HAS_HTTPX and httpx is not None:
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                resp = await client.get(url, params=params)
+                resp.raise_for_status()
+                data = resp.json()
+        else:
+            def _sync_fetch():
+                query_string = urllib.parse.urlencode(params, doseq=True)
+                req = urllib.request.Request(
+                    f"{url}?{query_string}",
+                    headers={"User-Agent": "SkyGuard-AI-Met-Uplink/1.0"}
+                )
+                with urllib.request.urlopen(req, timeout=8.0) as response:
+                    return json.loads(response.read().decode("utf-8"))
+            data = await asyncio.to_thread(_sync_fetch)
 
         current = data.get("current", {})
         hourly = data.get("hourly", {})
